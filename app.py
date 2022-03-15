@@ -27,7 +27,8 @@ class Parser:
             org_units = json.load(f)
 
             for ou in org_units['organisationUnits']:
-                self.org_units[ou['id']] = OrgUnit(ou['id'], ou['code'] if 'code' in ou else '', Utils.clean(ou['name']),
+                self.org_units[ou['id']] = OrgUnit(ou['id'], ou['code'] if 'code' in ou else '',
+                                                   Utils.clean(ou['name']),
                                                    Utils.clean(ou['shortName']), int(ou['level']),
                                                    ou['parent']['id'] if 'parent' in ou else None)
             print(len(self.org_units))
@@ -79,15 +80,56 @@ class Parser:
             users.append(self.prep_user(org_unit))
         return users
 
-    def prep_groups(self):
-        pass
-        # groups = [UserGroup("W9zmctpZOB3", "PHEM Data Analysts"), UserGroup(
-        #     "D7m0m53iGn5", "PHEM Users"), UserGroup("ymuSfWE4QPG", "PHEM Data Encoders")]
-        # for i, row in dataset.iterrows():
-        #     for j in range(groups.__len__()):
-        #         groups[j].users.append({'id': row['user_uid']})
-        #
-        # return groups
+    def prep_groups(self, users):
+        temp_groups = {
+            'PwExbEvrKCf': [],
+            'Bcd2iHJzUu6': [],
+            'I86aqEHvItw': [],
+            'wkclTBPaDVi': [],
+            'rjiHhv8FmyW': [],
+            'bavmjFhqqqg': [],
+            'mltSBvelpZD': [],
+            'B0HpU9W6DBK': [],
+            'KGS7WccBeDD': [],
+            'pYzHMznQuiH': [],
+            'eAWbodAQTsZ': [],
+            'tXSEDKV365m': [],
+            'rQoa96M8G4x': [],
+            'HgvQMs6OLY8': []
+        }
+
+        group = {
+            'Addis Ababa Regional Health Bureau': {'groupId': 'PwExbEvrKCf', 'groupName': 'PHEM Addis Ababa'},
+            'Afar Regional Health Bureau': {'groupId': 'Bcd2iHJzUu6', 'groupName': 'PHEM Afar'},
+            'Amhara Regional Health Bureau': {'groupId': 'I86aqEHvItw', 'groupName': 'PHEM Amhara'},
+            'Beneshangul Gumuz Regional Health Bureau': {'groupId': 'wkclTBPaDVi', 'groupName': 'PHEM Beneshangul Gumuz'},
+            'Dire Dawa Regional Health Bureau': {'groupId': 'rjiHhv8FmyW', 'groupName': 'PHEM Dire Dawa'},
+            'Gambella Regional Health Bureau': {'groupId': 'bavmjFhqqqg', 'groupName': 'PHEM Gambella'},
+            'Harari Regional Health Bureau': {'groupId': 'mltSBvelpZD', 'groupName': 'PHEM Harari'},
+            'Oromiya Regional Health Bureau': {'groupId': 'B0HpU9W6DBK', 'groupName': 'PHEM Oromiya'},
+            'Sidama Regional Health Bureau': {'groupId': 'KGS7WccBeDD', 'groupName': 'PHEM Sidama'},
+            'SNNP Regional Health Bureau': {'groupId': 'pYzHMznQuiH', 'groupName': 'PHEM SNNP'},
+            'Somali Regional Health Bureau': {'groupId': 'eAWbodAQTsZ', 'groupName': 'PHEM Somali'},
+            'South Western Ethiopia RHB': {'groupId': 'tXSEDKV365m', 'groupName': 'PHEM South Western'},
+            'Tigray Regional Health Bureau': {'groupId': 'rQoa96M8G4x', 'groupName': 'PHEM Tigray'},
+            'Users': {'groupId': 'HgvQMs6OLY8', 'groupName': 'PHEM users'}
+        }
+
+        for user in users:
+            hierarchy = Utils.generate_org_units_hierarchy(self.org_units, user.organisationUnits[0]['id'])
+            if hierarchy[1] in group.keys():
+                temp_groups[group[hierarchy[1]]['groupId']].append({'id': user.id})
+            if user.userCredentials.userRoles[0]['id'] == "YIJeGsUSjNr":
+                temp_groups['HgvQMs6OLY8'].append({'id': user.id})
+
+        user_groups = []
+        for key, g in group.items():
+            user_groups.append({
+                'name': g['groupName'],
+                'id': g['groupId'],
+                'users': temp_groups[g['groupId']]
+            })
+        return user_groups
 
     def write_json_to_file(self, file_name, json_data):
         try:
@@ -118,8 +160,8 @@ class Parser:
     def generate_users(self):
         return self.prep_users()
 
-    def generate_group(self):
-        return self.prep_groups()
+    def generate_group(self, users):
+        return self.prep_groups(users)
 
     def generate(self):
         print("Please wait ... ", end="")
@@ -129,11 +171,11 @@ class Parser:
         filename = ""
         if self.generate_type == "user":
             data['users'] = self.generate_users()
+            data['userGroups'] = self.generate_group(data['users'])
             filename = self.users_json_file_name
-        else:  # groups
-            # data['userGroups'] = self.generate_group(dataset)
-            # filename = self.groups_filename
-            pass
+        else:
+            print('Invalid parameter!')
+            exit()
 
         print('Done')
         print("Writing to json file ... ", end="")
@@ -158,8 +200,8 @@ class Parser:
     def help():
         print('app.py -g user')
         print('app.py --generate user')
-        print('app.py -g group')
-        print('app.py --generate group')
+        # print('app.py -g group')
+        # print('app.py --generate group')
 
 
 if __name__ == "__main__":
