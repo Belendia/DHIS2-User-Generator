@@ -95,7 +95,8 @@ class Parser:
             'eAWbodAQTsZ': [],
             'tXSEDKV365m': [],
             'rQoa96M8G4x': [],
-            'HgvQMs6OLY8': []
+            'HgvQMs6OLY8': [],
+            'AZM2Mg5ntKF': [],
         }
 
         group = {
@@ -112,6 +113,7 @@ class Parser:
             'Somali Regional Health Bureau': {'groupId': 'eAWbodAQTsZ', 'groupName': 'PHEM Somali'},
             'South Western Ethiopia RHB': {'groupId': 'tXSEDKV365m', 'groupName': 'PHEM South Western'},
             'Tigray Regional Health Bureau': {'groupId': 'rQoa96M8G4x', 'groupName': 'PHEM Tigray'},
+            'Ethiopian Public Health Institute': {'groupId': 'AZM2Mg5ntKF', 'groupName': 'PHEM National'},
             'Users': {'groupId': 'HgvQMs6OLY8', 'groupName': 'PHEM users'}
         }
 
@@ -119,8 +121,8 @@ class Parser:
             hierarchy = Utils.generate_org_units_hierarchy(self.org_units, user.organisationUnits[0]['id'])
             if hierarchy[1] in group.keys():
                 temp_groups[group[hierarchy[1]]['groupId']].append({'id': user.id})
-            if user.userCredentials.userRoles[0]['id'] == "YIJeGsUSjNr":
-                temp_groups['HgvQMs6OLY8'].append({'id': user.id})
+            # all users should belong to PHEM users
+            temp_groups['HgvQMs6OLY8'].append({'id': user.id})
 
         user_groups = []
         for key, g in group.items():
